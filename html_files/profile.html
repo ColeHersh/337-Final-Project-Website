@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>User Profile</title>
+        <script>
+            function editBio() {
+                var bioTextarea = document.getElementById("bio");
+                var button = document.getElementById("editBioBtn");
+                if(bioTextarea.readOnly){
+                    bioTextarea.readOnly = false;
+                    //bioTextarea.focus();
+                    button.innerText = "Save Bio";
+                }
+                else{
+                    bioTextarea.readOnly = true;
+                    button.innerText = "Edit Bio";
+                    // send fetch with updated info to server as get
+                }
+            }
+        </script>
+    </head>
+    <header>
+        <span> ALL MOVIES [logo?] </span> <span><a>Profile</a></span><span><a href="/movies">Movies</a></span><span><a href="/account">Watchlist</a></span>
+    </header>
+    <body>
+        <h1>Welcome All Movies [insert name from server] </insert></h1>
+        <textarea style="width:40%;height:100px;resize:none" id="bio" maxlength="300" readonly>Bio [insert bio from server - maybe a button to add one or text area user can edit. or hidden until edit hides bio]</textarea>
+        <br>
+        <button id="editBioBtn" onclick="editBio()">Edit Bio</button>
+        <p>Movies watched: [insert count from server]</p>
+        <p>Average Rating: [insert average rating from server]</p>
+        <a href="/logout">Logout</a>
+    </body>
+</html>
