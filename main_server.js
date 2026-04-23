@@ -22,7 +22,9 @@ var path = require('path');
 const { MongoClient } = require('mongodb');
 const uri = "mongodb://localhost:27017";
 const client = new MongoClient(uri);
-client.connect();
+
+// this is for the user session managements - NOTE MAY HAVE TO MAKE GLOBAL OR PASS TO MODULES
+sessions = {}
 
 client.connect()
 .then(() => {
