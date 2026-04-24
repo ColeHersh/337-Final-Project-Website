@@ -6,4 +6,4 @@
 // imports
 const path = require('path');
 
-module.exports = function(app, db) {};
+module.exports = function(app, db, sessions) {};

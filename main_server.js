@@ -24,7 +24,10 @@ const uri = "mongodb://localhost:27017";
 const client = new MongoClient(uri);
 
 // this is for the user session managements - NOTE MAY HAVE TO MAKE GLOBAL OR PASS TO MODULES
-sessions = {}
+var sessions = {}
+
+// for JSONs
+app.use(express.json());
 
 client.connect()
 .then(() => {
@@ -34,9 +37,9 @@ client.connect()
     const db = client.db('movie_reviews');
 
     // import the modules for the server
-    require('./modules/user')(app, db);
-    require('./modules/search')(app, db);
-    require('./modules/watchlist')(app, db);
+    require('./modules/user')(app, db, sessions);
+    require('./modules/search')(app, db, sessions);
+    require('./modules/watchlist')(app, db, sessions);
 
 })
 .catch((error) => {

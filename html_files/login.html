@@ -2,6 +2,33 @@
 <html>
     <head>
         <title>Login Page</title>
+        <script>
+            function loginReq(){
+                var username = document.getElementById("username").value;
+                var password = document.getElementById("password").value;
+                fetch("/loginAuth", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({username: username, password: password})
+                })
+                .then(response => response.json())
+                .then(data => { 
+                    if(data.success){
+                        localStorage.setItem("token", data.token);
+                        window.location.href = "/profile";
+                    }
+                    else{
+                        document.getElementById("errorMsg").innerText = data.message;
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    document.getElementById("errorMsg").innerText = "An error occurred. Please try again.";
+                });
+            }
+        </script>
     </head>
     <body>
         <h1>Login to All Movies</h1>
@@ -9,12 +36,12 @@
         <a href="/createUser">Don't have an account? Sign up here</a>
         <p id="errorMsg" style="color:red;"></p>
         <br><br><br>
-        <form action="/loginAuth" method="post">
+        <form action="" method="post">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required><br><br>
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required><br><br>
-            <input type="submit" value="Login">
+            <input type="button" value="Login" onclick="loginReq()">
         </form>
     </body>
 </html>
