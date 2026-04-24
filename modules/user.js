@@ -51,7 +51,7 @@ module.exports = function(app, db, sessions) {
 
                 // IMPORTANT: return insert promise so chain continues correctly
                 return db.collection('users')
-                    .insertOne({ username: username, password: password })
+                    .insertOne({ username: username, password: password, bio:"Tell us about yourself!", favorite: "", average_rating: 0 })
                     .then(() => {
                         response.success = true;
                         response.message = "User created successfully";
