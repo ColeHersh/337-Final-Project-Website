@@ -73,6 +73,21 @@
                     console.error("Error:", error);
                 });
             }
+            function deleteAccount() {
+                if(!confirm("Are you sure you want to delete your account? This action cannot be undone.")){
+                    return;
+                }
+                fetch("/deleteAccount?username=" + localStorage.getItem("username"))
+                .then(response => response.json())
+                .then(data => {
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("username");
+                    window.location.href = "/login";
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+            }
         </script>
     </head>
     <header>
@@ -85,6 +100,7 @@
         <button id="editBioBtn" onclick="editBio()">Edit Bio</button>
         <p id="favorite">Favorite:</p>
         <p id="averageRating">Average Rating:</p>
-        <button onclick="logout()">Logout</button>
+        <button onclick="logout()">Logout</button><br><br>
+        <button onclick="deleteAccount()">Delete Account</button>
     </body>
 </html>

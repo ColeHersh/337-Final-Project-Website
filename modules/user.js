@@ -177,4 +177,27 @@ module.exports = function(app, db, sessions) {
         });
 
     });
+
+    app.get('/deleteAccount', (req, res) => {
+        const { username } = req.query;
+        var response = {
+            success: false,
+        };
+        db.collection('users').deleteOne({ username: username })
+        .then(result => {
+
+            if (result.deletedCount === 1) {
+                return res.json({ success: true });
+            }
+            // should never happen
+            console.log("Delete never found the user");
+            return res.json({
+                success: false,
+            });
+        })
+        .catch(err => {
+            console.log("Delete error:", err);
+            res.json({ success: false });
+        });
+    });
 };
