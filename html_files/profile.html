@@ -3,6 +3,31 @@
     <head>
         <title>User Profile</title>
         <script>
+            /**
+            * This function makes the request to the server to the user's information.
+            * It uses the session token to validate the user and session then sends the data back
+            */
+            function getProfileInfo(){
+                fetch("/getProfileInfo?token=" + localStorage.getItem("token") + "&username=" + localStorage.getItem("username"))
+                .then(response => response.json())
+                .then(data => {
+                    // Update the profile information on the page
+
+                    if(!data.success){
+                        alert("Session expired or invalid. Please log in again.");
+                        window.location.href = "/login";
+                        return;
+                    }
+                    document.getElementById("title").innerText = "Welcome to All Movies " + localStorage.getItem("username") + "!";
+                    document.getElementById("bio").value = data.bio;
+                    document.getElementById("favorite").innerText = "Favoirte Movie: "+ data.favorite;
+                    document.getElementById("averageRating").innerText = "Average Rating: " + data.averageRating;
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+
+            }
             function editBio() {
                 var bioTextarea = document.getElementById("bio");
                 var button = document.getElementById("editBioBtn");
@@ -17,18 +42,30 @@
                     // send fetch with updated info to server as get
                 }
             }
+            function logout() {
+                fetch("/logout?username=" + localStorage.getItem("username"))
+                .then(response => response.json())
+                .then(data => {
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("username");
+                    window.location.href = "/login";
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+            }
         </script>
     </head>
     <header>
         <span> ALL MOVIES [logo?] </span> <span><a href="">Profile</a></span><span><a href="/movies">Movies</a></span><span><a href="/account">Watchlist</a></span>
     </header>
-    <body>
-        <h1>Welcome All Movies [insert name from server] </insert></h1>
-        <textarea style="width:40%;height:100px;resize:none" id="bio" maxlength="300" readonly>Bio [insert bio from server - maybe a button to add one or text area user can edit. or hidden until edit hides bio]</textarea>
+    <body onload="getProfileInfo()">
+        <h1 id="title">Welcome All Movies</h1>
+        <textarea style="width:40%;height:100px;resize:none" id="bio" maxlength="300" readonly></textarea>
         <br>
         <button id="editBioBtn" onclick="editBio()">Edit Bio</button>
-        <p>Movies watched: [insert count from server]</p>
-        <p>Average Rating: [insert average rating from server]</p>
-        <a href="/logout">Logout</a>
+        <p id="favorite">Favorite:</p>
+        <p id="averageRating">Average Rating:</p>
+        <button onclick="logout()">Logout</button>
     </body>
 </html>

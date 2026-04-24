@@ -1,6 +1,8 @@
 /**
  * For user-specific things like profile, login, and registration
  * Is an exported function to avoid using globals
+ * 
+ * Note to return resposnes as sending multiple headers at once occures and causes server crashes
  */
 
 // imports
@@ -43,13 +45,11 @@ module.exports = function(app, db, sessions) {
             .findOne({ username: username })
             .then(user => {
 
-                // USER EXISTS → STOP HERE
                 if (user) {
                     response.message = "Username already exists";
                     return res.json(response);
                 }
 
-                // IMPORTANT: return insert promise so chain continues correctly
                 return db.collection('users')
                     .insertOne({ username: username, password: password, bio:"Tell us about yourself!", favorite: "", average_rating: 0 })
                     .then(() => {
@@ -99,5 +99,61 @@ module.exports = function(app, db, sessions) {
                 return res.json(response);
             });
     });
+
+    app.get('/profile', (req, res) => {
+        res.sendFile(path.join(__dirname, '../html_files/profile.html'));
+    });
+
+    app.get('/getProfileInfo' , (req, res) => {
+        console.log("Received request for profile info with query:", req.query);
+        const { token, username } = req.query;
+        var response = {
+            success: false,
+            bio: null,
+            favorite: null,
+            averageRating: null
+        };
+        if(!token || !username || !sessions[username] || sessions[username].token !== token){
+            console.log("Invalid or expired session for user:", username);
+            res.json(response);
+            return;
+        }
+        else{
+            response.success = true;
+            db.collection('users').findOne({ username: username })
+            .then(user => {
+                if (!user) {
+                    response.success = false;
+                    response.message = "User not found - Critical error: session exists for user that does not exist in database";
+                    console.log(response.message);
+                    return res.json(response);
+                }
+                console.log("User profile found for", username);
+                response.bio = user.bio;
+                response.favorite = user.favorite;
+                response.averageRating = user.average_rating;
+
+                console.log("response is", response);
+                return res.json(response);
+            })
+            .catch(err => {
+                response.success = false;
+                console.log("Error in getProfileInfo:", err);
+                response.message = "Error occurred while fetching profile information";
+                return res.json(response);
+            });
+        }
+    });
+
+    app.get('/logout', (req, res) => {
+        const { username } = req.query;
+
+        if (sessions[username]) {
+            delete sessions[username];
+            console.log("User logged out:", username);
+        }
+        return res.json({});
+    });
+
 
 };
