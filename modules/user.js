@@ -193,7 +193,7 @@ module.exports = function(app, db, sessions) {
             console.log("Delete never found the user");
             return res.json({
                 success: false,
-            });
+            }); 
         })
         .catch(err => {
             console.log("Delete error:", err);
