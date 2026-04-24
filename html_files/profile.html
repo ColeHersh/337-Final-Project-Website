@@ -40,6 +40,25 @@
                     bioTextarea.readOnly = true;
                     button.innerText = "Edit Bio";
                     // send fetch with updated info to server as get
+                    fetch("/updateBio", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            username: localStorage.getItem("username"),
+                            newBio: bioTextarea.value
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if(!data.success){
+                            alert("Failed to update bio. Please try again.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error:", error);
+                    })
                 }
             }
             function logout() {

@@ -155,5 +155,26 @@ module.exports = function(app, db, sessions) {
         return res.json({});
     });
 
+    app.post('/updateBio', (req, res) => {
+        const { username, newBio } = req.body;
+        var response = {
+            success: false,
+        };
 
+        db.collection('users').updateOne({ username: username }, { $set: { bio: newBio } })
+        .then(result => {
+            if (result.matchedCount === 1) {
+                console.log("Bio updated for user:", username);
+                console.log("Bio: ", newBio);
+                console.log("modified:", result.modifiedCount);
+                response.success = true;
+                return res.json(response);
+            }
+        })
+        .catch(err => {
+            console.log("Error in updateBio:", err);
+            return res.json(response);
+        });
+
+    });
 };
