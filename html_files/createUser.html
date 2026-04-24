@@ -3,15 +3,43 @@
     <head>
         <title>Create User Page</title>
         <script>
+            // request to server to create a new user
+            function createUser(){
+                fetch("/createUserAuth", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        username: document.getElementById("username").value,
+                        password: document.getElementById("password").value
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success){
+                        alert("User created successfully! Please log in.");
+                        window.location.href = "/login";
+                    }
+                    else{
+                        document.getElementById("error-message").innerText = data.message;
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    document.getElementById("error-message").innerText = "An error occurred. Please try again.";
+                });
+
+            }
             // Client-side validation for password confirmation
             function validateForm() {
                 var password = document.getElementById("password").value;
                 var confirmPassword = document.getElementById("confirm_password").value;
                 if (password !== confirmPassword) {
                     document.getElementById("error-message").innerText = "Passwords do not match. Please try again.";
-                    return false;
+                    return;
                 }
-                return true;
+                createUser();
             }
         </script>
     </head>
@@ -21,14 +49,14 @@
         <a href="/login">Already have an account? Login here</a>
         <p id = "error-message" style="color:red"></p>
         <br><br><br>
-        <form action="/createUserAuth" method="post" onsubmit="return validateForm()">
+        <form action="" method="post">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required><br><br>
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required><br><br>
             <label for="confirm_password">Confirm Password:</label>
             <input type="password" id="confirm_password" name="confirm_password" required><br><br>
-            <input type="submit" value="Create User">
+            <input type="button" value="Create User" onclick="validateForm()">
         </form>
     </body>
 </html>
