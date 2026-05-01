@@ -30,7 +30,11 @@ var sessions = {}
 app.use(express.json());
 
 // for css
-app.use(express.static(__dirname)); 
+app.use(express.static(path.join(__dirname, '/'))); 
+app.get('/style.css', (req, res) => {
+    res.sendFile(__dirname + '/style.css');
+});
+
 
 client.connect()
 .then(() => {
@@ -43,7 +47,6 @@ client.connect()
     require('./modules/user')(app, db, sessions);
     require('./modules/search')(app, db, sessions);
     require('./modules/watchlist')(app, db, sessions);
-
 
 
 })
