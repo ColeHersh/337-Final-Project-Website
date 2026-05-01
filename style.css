@@ -1,13 +1,29 @@
 header {
     background-color: rgb(82, 82, 221);
     width: 100%;
-    height: 50px;
+    height: 60px;
     left: 0;
     top: 0;
     position:fixed;
+    color: white;
 }
 body{
-    top: 50px;
+    top: 60px;
     position: fixed;
     width: 100%;
+}
+span{
+    padding: 3%;
+}
+.header{
+    color: white;
+    text-decoration: none;
+}
+
+/* When the user hovers over the links in the header, 
+change their color and underline them */
+
+header a:hover {
+  background-color: black;
+  padding: 10px;
 }
