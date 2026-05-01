@@ -24,6 +24,6 @@ The path should be C:\data\db
 
 NOTE: this was done on a Windows system. MacOS or Linux may differ
 
-4. Start the server:
+3. Start the server:
 node server.js
 The application will run at http://localhost:8080
