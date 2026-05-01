@@ -1,3 +1,13 @@
 header {
     background-color: rgb(82, 82, 221);
+    width: 100%;
+    height: 50px;
+    left: 0;
+    top: 0;
+    position:fixed;
+}
+body{
+    top: 50px;
+    position: fixed;
+    width: 100%;
 }
