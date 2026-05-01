@@ -3,27 +3,27 @@
 This is a Node.js web application built using Express and MongoDB. Follow the
 steps below to install dependencies and run the project.
 1. Install required packages if not using JSON (make sure to delete):
-npm install express
-npm install mongodb
+&emsp;npm install express
+&emsp;npm install mongodb
 
-If using the JSON do:
-npm install
-
+&emsp;If using the JSON do:
+&emsp;npm install
+<br><br>
 2. Make sure mongoDB is installed:
 [https://www.mongodb.com/try/download/shell](https://www.mongodb.com/try/download/community)
-  mongodb.com/try/download/shell
+&emsp;mongodb.com/try/download/shell
 
-Then run mongod to start MongoDB shell. NOTE: you may have to add to PATH:
-C:\Program Files\MongoDB\Server\[version]\bin
+&emsp;Then run mongod to start MongoDB shell. NOTE: you may have to add to PATH:
+&emsp;C:\Program Files\MongoDB\Server\[version]\bin
+<br>
+&emsp;NOTE: may have to create folder to store databases as it may not be automatically created
+&emsp;If so, do this:
+&emsp;mkdir \data\db
+<br>
+&emsp;The path should be C:\data\db
 
-NOTE: may have to create folder to store databases as it may not be automatically created
-If so, do this:
-mkdir \data\db
-
-The path should be C:\data\db
-
-NOTE: this was done on a Windows system. MacOS or Linux may differ
-
+&emsp;NOTE: this was done on a Windows system. MacOS or Linux may differ
+<br><br>
 3. Start the server:
 node server.js
 The application will run at http://localhost:8080
