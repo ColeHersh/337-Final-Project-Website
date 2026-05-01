@@ -3,6 +3,12 @@
     <head>
         <title>Login Page</title>
         <link rel="stylesheet" href="/style.css">
+        <style>
+            label{
+                font-weight: bold;
+                font-size: 20px;
+            }
+        </style>
         <script>
             function loginReq(){
                 var username = document.getElementById("username").value;
@@ -40,9 +46,9 @@
             <p id="errorMsg" style="color:red;"></p>
             <br><br><br>
             <form action="" method="post">
-                <label for="username">Username:</label>
+                <label for="username">Username</label><br>
                 <input type="text" id="username" name="username" required><br><br>
-                <label for="password">Password:</label>
+                <label for="password">Password</label><br>
                 <input type="password" id="password" name="password" required><br><br>
                 <input style="margin-left: 150px;" type="button" value="Login" onclick="loginReq()">
             </form>
