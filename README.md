@@ -6,12 +6,12 @@ steps below to install dependencies and run the project.
 1. Install required packages IF NOT using JSON (make sure to delete them as it may cause issues):
 <br>
 &emsp;npm install express <br>
-&emsp;npm install mongodb
+&emsp;npm install mongodb <br>
 <br>
-&emsp;IF using the JSON (RECOMMENDED) do:
+&emsp;IF using the JSON (RECOMMENDED) do: <br>
 &emsp;npm install
 <br><br>
-3. Make sure mongoDB is installed:
+2. Make sure mongoDB is installed:
 [https://www.mongodb.com/try/download/shell](https://www.mongodb.com/try/download/community)
 &emsp;mongodb.com/try/download/shell
 
