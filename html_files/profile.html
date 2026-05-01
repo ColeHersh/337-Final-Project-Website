@@ -2,7 +2,7 @@
 <html>
     <head>
         <title>User Profile</title>
-        <link rel="stylesheet" href="../style.css">
+        <link rel="stylesheet" href="/style.css">
         <script>
             /**
             * This function makes the request to the server to the user's information.
@@ -92,16 +92,22 @@
         </script>
     </head>
     <header>
-        <span> ALL MOVIES [logo?] </span> <span><a href="">Profile</a></span><span><a href="/movies">Movies</a></span><span><a href="/account">Watchlist</a></span>
+        <h2><span> ALL MOVIES </span> <span><a class="header" href="">Profile</a></span><span><a class="header" href="/movies">Movies</a></span><span><a class="header" href="/account">Watchlist</a></span></h2>
     </header>
     <body onload="getProfileInfo()">
-        <h1 id="title">Welcome All Movies</h1>
-        <textarea style="width:40%;height:100px;resize:none" id="bio" maxlength="300" readonly></textarea>
+        <h1 id="title" style="margin-left:40%">Welcome to All Movies!</h1>
+        <div style="display: flex; align-items: flex-start; gap: 5%; width: 100%;">
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-left: 2%;margin-top: 15px; min-width: 100px;">
+                <label for="bio" style="font-weight: bold; font-size: 30px;">Bio</label>
+                <button id="editBioBtn" style="width: fit-content; padding: 5px 10px;" onclick="editBio()">Edit Bio</button>
+            </div>
+            <textarea id="bio" style="width: 70%; height: 100px; resize: none;" maxlength="300" readonly></textarea>
+        </div>
         <br>
-        <button id="editBioBtn" onclick="editBio()">Edit Bio</button>
-        <p id="favorite">Favorite:</p>
+        
+        <p id="favorite">Favorite Movie:</p>
         <p id="averageRating">Average Rating:</p>
         <button onclick="logout()">Logout</button><br><br>
-        <button onclick="deleteAccount()">Delete Account</button>
+        <button style="background-color: red;" onclick="deleteAccount()">Delete Account</button>
     </body>
 </html>
