@@ -32,18 +32,20 @@
             }
         </script>
     </head>
-    <body>
-        <h1>Login to All Movies</h1>
-        <p>Please enter your username and password to log in</p>
-        <a href="/createUser">Don't have an account? Sign up here</a>
-        <p id="errorMsg" style="color:red;"></p>
-        <br><br><br>
-        <form action="" method="post">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required><br><br>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required><br><br>
-            <input type="button" value="Login" onclick="loginReq()">
-        </form>
+    <body style="align-items:center">
+        <div class="center-container">
+            <h1>Login to All Movies</h1>
+            <p>Please enter your username and password to log in</p>
+            <a href="/createUser">Don't have an account? Sign up here</a>
+            <p id="errorMsg" style="color:red;"></p>
+            <br><br><br>
+            <form action="" method="post">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required><br><br>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required><br><br>
+                <input style="margin-left: 150px;" type="button" value="Login" onclick="loginReq()">
+            </form>
+        </div>
     </body>
 </html>

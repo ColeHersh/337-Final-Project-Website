@@ -12,6 +12,7 @@ body{
     position: fixed;
     width: 100%;
     min-width: 1000px;
+    background-color: gray;
 }
 span {
     padding: 3%;
@@ -40,4 +41,30 @@ input[type="button"] {
     color: white;
     border: none;
     padding: 10px 20px;
+}
+
+input[type="text"] {
+  padding: 12px 20px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; 
+  font-size: 16px;
+  color: #333;
+}
+input[type="password"] {
+  padding: 12px 20px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; 
+  font-size: 16px;
+  color: #333;
+}
+.center-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    flex-direction: column;
 }
