@@ -2,6 +2,7 @@
 
 This is a Node.js web application built using Express and MongoDB. Follow the
 steps below to install dependencies and run the project.
+<br>
 1. Install required packages if not using JSON (make sure to delete):
 &emsp;npm install express
 &emsp;npm install mongodb
