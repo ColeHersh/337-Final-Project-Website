@@ -11,7 +11,7 @@ npm install
 
 2. Make sure mongoDB is installed:
 [https://www.mongodb.com/try/download/shell](https://www.mongodb.com/try/download/community)
-mongodb.com/try/download/shell
+  mongodb.com/try/download/shell
 
 Then run mongod to start MongoDB shell. NOTE: you may have to add to PATH:
 C:\Program Files\MongoDB\Server\[version]\bin
