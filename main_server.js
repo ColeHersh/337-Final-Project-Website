@@ -29,6 +29,9 @@ var sessions = {}
 // for JSONs
 app.use(express.json());
 
+// for css
+app.use(express.static(__dirname)); 
+
 client.connect()
 .then(() => {
     console.log('Connected to MongoDB');
@@ -40,6 +43,8 @@ client.connect()
     require('./modules/user')(app, db, sessions);
     require('./modules/search')(app, db, sessions);
     require('./modules/watchlist')(app, db, sessions);
+
+
 
 })
 .catch((error) => {
