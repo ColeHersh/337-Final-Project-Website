@@ -13,11 +13,11 @@ steps below to install dependencies and run the project.
 <br><br>
 2. Make sure mongoDB is installed:
 [https://www.mongodb.com/try/download/shell](https://www.mongodb.com/try/download/community)
-&emsp;mongodb.com/try/download/shell
+&emsp;mongodb.com/try/download/shell<br><br>
 
-&emsp;Then run mongod to start MongoDB shell. NOTE: you may have to add to PATH:
-&emsp;C:\Program Files\MongoDB\Server\[version]\bin
-<br>
+&emsp;Then run mongod to start MongoDB shell. NOTE: you may have to add to PATH:<br>
+&emsp;C:\Program Files\MongoDB\Server\\[version]\bin
+<br><br>
 &emsp;NOTE: may have to create folder to store databases as it may not be automatically created
 &emsp;If so, do this:
 &emsp;mkdir \data\db
