@@ -264,10 +264,18 @@
             function getUsername() { return localStorage.getItem('username'); }
 
             function checkLogin() {
-                if (!getToken() || !getUsername()) {
-                    alert('Please log in to search movies.');
-                    window.location.href = '/login';
-                }
+                fetch("/checkLogin?token=" + localStorage.getItem("token") + "&username=" + localStorage.getItem("username"))
+                .then(response => response.json())
+                .then(data => {
+                    if(!data.success){
+                        alert("Session expired or invalid. Please log in again.");
+                        window.location.href = "/login";
+                        return;
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
             }
 
             function searchMovies() {

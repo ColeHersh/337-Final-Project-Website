@@ -48,6 +48,27 @@ client.connect()
     require('./modules/search')(app, db, sessions);
     require('./modules/watchlist')(app, db, sessions);
 
+    // generic check login route
+    app.get('/checkLogin', (req, res) => {
+         console.log("Received request for profile info with query:", req.query);
+        const { token, username } = req.query;
+        var response = {
+            success: false,
+            bio: null,
+            favorite: null,
+            averageRating: null
+        };
+        if(!token || !username || !sessions[username] || sessions[username].token !== token){
+            console.log("Invalid or expired session for user:", username);
+            res.json(response);
+            return;
+        }
+        else{
+            response.success = true;
+            return res.json(response);
+        }
+    });
+
 
 })
 .catch((error) => {
