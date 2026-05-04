@@ -29,3 +29,24 @@ steps below to install dependencies and run the project.
 3. Start the server:
 node server.js
 The application will run at http://localhost:8080
+
+# Directory Structure
+```
+source
+├── .gitignore
+├── LICENSE
+├── main_server.js 
+├── package.json 
+├── README.md 
+├── style.css 
+├── html_files/ 
+│   ├── createUser.html 
+│   ├── login.html 
+│   ├── profile.html 
+│   ├── search.html 
+│   └── watchlist.html 
+└── modules/ 
+    ├── search.js
+    ├── user.js 
+    └── watchlist.js
+```
