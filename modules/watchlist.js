@@ -7,7 +7,7 @@ module.exports = function(app, db, sessions) {
     var watchlists = db.collection("watchlists");
 
     function getUser(req) {
-        var token = req.query.session;
+        var token = req.headers.session || req.query.session;
 
         for (var username in sessions) {
             if (sessions[username].token === token) {
