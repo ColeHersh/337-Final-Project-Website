@@ -30,7 +30,7 @@ var sessions = {}
 app.use(express.json());
 
 // for css
-app.use(express.static(path.join(__dirname, '/'))); 
+app.use(express.static(path.join(__dirname, 'html_files')));
 app.get('/style.css', (req, res) => {
     res.sendFile(__dirname + '/style.css');
 });

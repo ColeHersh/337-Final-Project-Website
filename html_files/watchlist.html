@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Watchlist</title>
+</head>
+
+<body>
+    <h2>Add Movies</h2>
+
+    <input type="text" id="title" placeholder="Name">
+    <input type="text" id="year" placeholder="Year">
+    <input type="text" id="poster" placeholder="Poster URL">
+
+    <button onclick="addMovies()">Add to Watchlist</button>
+
+    <h2>Movies</h2>
+    <button onclick="loadlist()">Load Watchlist</button>
+
+    <div id="watchlist"></div>
+
+    <script>
+        var session = localStorage.getItem("token");
+        console.log("token is:", session);
+
+        // if not logged in, stop immediately
+        if (!session) {
+            alert("You are not logged in");
+        }
+
+        async function loadlist() {
+            if (!session) return;
+
+            var res = await fetch("/watchlist?session=" + session);
+            var movies = await res.json();
+
+            var div = document.getElementById("watchlist");
+            div.innerHTML = "";
+
+            if (movies.error) {
+                div.innerHTML = "<p>" + movies.error + "</p>";
+                return;
+            }
+            var totalRating = 0;
+            var totalMovies = 0;
+            
+            for(var i =0; i < movies.length; i++){
+                if(movies[i].rating > 0){
+                    totalRating += movies[i].rating;
+                    totalMovies++;
+                }
+            }
+
+            var overallRating = 0;
+            if(totalMovies > 0){
+                overallRating = (totalRating / totalMovies).toFixed(1);
+            }
+            div.innerHTML+="<h3> Average Rating: " + overallRating + "/5</h3>";
+            for (var i = 0; i < movies.length; i++) {
+                var movie = movies[i];
+                var average = 0;
+                if(movie.ratingCount > 0){
+                    average = (movie.ratingSum / movie.ratingCount).toFixed(1);
+                }
+                div.innerHTML += `
+                    <div>
+                        <h3>${movie.title} (${movie.year})</h3>
+                        <img src="${movie.poster}" width="120">
+                        <p>Rating: ${movie.rating}/5</p>
+
+                        <select id="rating-${i}">
+                            <option value="1">1 Star</option>
+                            <option value="2">2 Stars</option>
+                            <option value="3">3 Stars</option>
+                            <option value="4">4 Stars</option>
+                            <option value="5">5 Stars</option>
+                        </select>
+
+                        <button onclick="rateMovie('${movie.title}', 'rating-${i}')">Rate</button>
+                        <br><br>
+
+                        <button onclick="removeMovie('${movie.title}')">Remove</button>
+                        <button onclick="watched('${movie.title}')">Watched</button>
+                    </div>
+                    <hr>
+                `;
+            }
+        }
+
+        async function addMovies() {
+            if (!session) {
+                alert("You are not logged in");
+                return;
+            }
+
+            var movie = {
+                title: document.getElementById("title").value,
+                year: document.getElementById("year").value,
+                poster: document.getElementById("poster").value
+            };
+
+            console.log("movie being sent:", movie);
+            console.log("session being sent:", session);
+
+            var res = await fetch("/watchlist/add?session=" + session, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(movie)
+            });
+
+            console.log("status:", res.status);
+
+            var data = await res.json();
+            console.log("response:", data);
+
+            alert(data.msgs || data.error);
+            loadlist();
+        }
+
+        async function removeMovie(title) {
+            if (!session) return;
+
+            var res = await fetch("/watchlist/remove?session=" + session, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ title: title })
+            });
+
+            var data = await res.json();
+            alert(data.msgs || data.error);
+            loadlist();
+        }
+
+        async function watched(title) {
+            if (!session) return;
+
+            var res = await fetch("/watchlist/watched?session=" + session, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ title: title })
+            });
+
+            var data = await res.json();
+            alert(data.msgs || data.error);
+            loadlist();
+        }
+
+        async function rateMovie(title, ratingId) {
+            if (!session) return;
+
+            var rating = document.getElementById(ratingId).value;
+
+            var res = await fetch("/watchlist/rating?session=" + session, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    title: title,
+                    rating: rating
+                })
+            });
+
+            var data = await res.json();
+            alert(data.msgs || data.error);
+            loadlist();
+        }
+
+        loadlist();
+    </script>
+</body>
+</html>
