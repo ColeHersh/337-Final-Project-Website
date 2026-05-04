@@ -279,6 +279,7 @@
             }
 
             function searchMovies() {
+                checkLogin();
                 var query = document.getElementById('search-input').value.trim();
                 document.getElementById('error-msg').innerText = '';
 
@@ -322,10 +323,12 @@
             }
 
             function handleKeyDown(event) {
+                checkLogin();
                 if (event.key === 'Enter') searchMovies();
             }
 
             function renderMovieCards(movies) {
+                checkLogin();
                 var grid = document.getElementById('results-grid');
                 grid.innerHTML = '';
                 movies.forEach(function(movie) {
@@ -553,7 +556,7 @@
             <span>ALL MOVIES</span>
             <span><a class="header" href="/profile">Profile</a></span>
             <span><a class="header" href="/movies">Movies</a></span>
-            <span><a class="header" href="/watchlist.html">Watchlist</a></span>
+            <span><a class="header" href="/watchlist">Watchlist</a></span>
         </h2>
     </header>
 
