@@ -1,621 +1,182 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Search Movies</title>
-        <link rel="stylesheet" href="/style.css">
-        <style>
-            #search-container {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                padding-top: 80px;
-                width: 100%;
-            }
+/**
+ * For the search page - allows users to search for movies using the OMDB API
+ * and add them to their watchlist.
+ * Is an exported function to avoid using globals.
+ * 
+ * Uses the same session pattern as user.js and watchlist.js
+ */
 
-            #search-bar-row {
-                display: flex;
-                gap: 10px;
-                margin-bottom: 20px;
-                width: 70%;
-            }
+const path = require('path');
+const https = require('https');
 
-            #search-input {
-                flex: 1;
-                padding: 12px 20px;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                font-size: 16px;
-                color: #333;
-            }
+// Free OMDB API key - get your own at http://www.omdbapi.com/apikey.aspx
+// This demo key has limited requests per day
+const OMDB_API_KEY = 'trilogy'; // replace with your own key if needed
 
-            #search-btn {
-                padding: 12px 24px;
-                cursor: pointer;
-                font-size: 16px;
-            }
+module.exports = function(app, db, sessions) {
 
-            #error-msg {
-                color: red;
-                margin-bottom: 10px;
-                font-size: 15px;
-            }
+    /**
+     * Helper: validate session using the same token pattern as user.js
+     * Checks localStorage token + username sent as query params
+     */
+    function isValidSession(token, username) {
+        return token && username && sessions[username] && sessions[username].token === token;
+    }
 
-            #results-grid {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 20px;
-                justify-content: center;
-                width: 90%;
-                padding-bottom: 40px;
-            }
-
-            .movie-card {
-                background-color: #fff;
-                border-radius: 6px;
-                width: 160px;
-                cursor: pointer;
-                box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
-                transition: transform 0.15s;
-                overflow: hidden;
-                text-align: center;
-            }
-
-            .movie-card:hover {
-                transform: translateY(-4px);
-                box-shadow: 4px 6px 12px rgba(0,0,0,0.3);
-            }
-
-            .movie-card img {
-                width: 100%;
-                height: 220px;
-                object-fit: cover;
-                display: block;
-            }
-
-            .movie-card .no-poster {
-                width: 100%;
-                height: 220px;
-                background-color: #ddd;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 13px;
-                color: #666;
-            }
-
-            .movie-card .card-title {
-                font-weight: bold;
-                font-size: 13px;
-                padding: 6px 8px 2px;
-                color: #222;
-            }
-
-            .movie-card .card-year {
-                font-size: 12px;
-                color: #666;
-                padding-bottom: 8px;
-            }
-
-            #modal-overlay {
-                display: none;
-                position: fixed;
-                inset: 0;
-                background: rgba(0,0,0,0.6);
-                z-index: 1000;
-                align-items: center;
-                justify-content: center;
-            }
-
-            #modal-overlay.open {
-                display: flex;
-            }
-
-            #modal-box {
-                background: #fff;
-                border-radius: 8px;
-                width: 650px;
-                max-width: 95vw;
-                max-height: 88vh;
-                overflow-y: auto;
-                padding: 24px;
-                position: relative;
-            }
-
-            #modal-close {
-                position: absolute;
-                top: 12px;
-                right: 16px;
-                background: none;
-                border: none;
-                font-size: 22px;
-                cursor: pointer;
-                color: #333;
-                padding: 0;
-                line-height: 1;
-            }
-
-            #modal-close:hover {
-                color: red;
-                background: none;
-            }
-
-            #modal-header {
-                display: flex;
-                gap: 20px;
-                margin-bottom: 16px;
-            }
-
-            #modal-poster {
-                width: 120px;
-                flex-shrink: 0;
-                border-radius: 4px;
-            }
-
-            #modal-poster.no-img {
-                width: 120px;
-                height: 175px;
-                background: #ddd;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 12px;
-                color: #666;
-                border-radius: 4px;
-            }
-
-            #modal-info h2 {
-                margin: 0 0 6px;
-                font-size: 22px;
-                color: #222;
-            }
-
-            #modal-info p {
-                margin: 3px 0;
-                font-size: 14px;
-                color: #444;
-            }
-
-            #modal-plot {
-                font-size: 14px;
-                color: #333;
-                line-height: 1.6;
-                margin: 12px 0;
-                border-top: 1px solid #eee;
-                padding-top: 10px;
-            }
-
-            #review-section {
-                border-top: 1px solid #eee;
-                padding-top: 14px;
-                margin-top: 4px;
-            }
-
-            #review-section h3 {
-                font-size: 17px;
-                margin-bottom: 10px;
-                color: #222;
-            }
-
-            .star-row {
-                display: flex;
-                gap: 6px;
-                margin-bottom: 10px;
-            }
-
-            .star {
-                font-size: 28px;
-                cursor: pointer;
-                color: #ccc;
-                transition: color 0.1s;
-                line-height: 1;
-                background: none;
-                border: none;
-                padding: 0;
-            }
-
-            .star.selected, .star.hover {
-                color: rgb(82, 82, 221);
-            }
-
-            #rating-label {
-                font-size: 14px;
-                color: #555;
-                margin-bottom: 8px;
-            }
-
-            #review-textarea {
-                width: 100%;
-                height: 80px;
-                resize: vertical;
-                padding: 8px;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                font-size: 14px;
-                font-family: inherit;
-                box-sizing: border-box;
-                margin-bottom: 10px;
-            }
-
-            #modal-action-row {
-                display: flex;
-                gap: 10px;
-                flex-wrap: wrap;
-            }
-
-            #submit-review-msg {
-                margin-top: 8px;
-                font-size: 14px;
-                color: green;
-            }
-
-            #submit-review-msg.error {
-                color: red;
-            }
-
-            #loading-spinner {
-                display: none;
-                text-align: center;
-                font-size: 16px;
-                color: #555;
-                padding: 20px;
-            }
-
-            #no-results-msg {
-                display: none;
-                text-align: center;
-                color: #555;
-                font-size: 16px;
-                padding: 20px;
-            }
-        </style>
-
-        <script>
-            var selectedRating = 0;
-
-            function getToken()    { return localStorage.getItem('token'); }
-            function getUsername() { return localStorage.getItem('username'); }
-
-            function checkLogin() {
-                if (!getToken() || !getUsername()) {
-                    alert('Please log in to search movies.');
-                    window.location.href = '/login';
-                }
-            }
-
-            function searchMovies() {
-                var query = document.getElementById('search-input').value.trim();
-                document.getElementById('error-msg').innerText = '';
-
-                if (!query) {
-                    document.getElementById('error-msg').innerText = 'Please enter a movie title to search.';
-                    return;
-                }
-
-                document.getElementById('results-grid').innerHTML = '';
-                document.getElementById('loading-spinner').style.display = 'block';
-                document.getElementById('no-results-msg').style.display = 'none';
-
-                fetch('/searchMovies?query=' + encodeURIComponent(query)
-                    + '&token=' + encodeURIComponent(getToken())
-                    + '&username=' + encodeURIComponent(getUsername()))
-                .then(function(res) { return res.json(); })
-                .then(function(data) {
-                    document.getElementById('loading-spinner').style.display = 'none';
-
-                    if (!data.success) {
-                        document.getElementById('error-msg').innerText = data.message || 'An error occurred.';
-                        if (data.message && data.message.includes('Session')) {
-                            window.location.href = '/login';
-                        }
-                        return;
-                    }
-
-                    if (!data.movies || data.movies.length === 0) {
-                        document.getElementById('no-results-msg').style.display = 'block';
-                        document.getElementById('no-results-msg').innerText = data.message || 'No movies found. Try a different search.';
-                        return;
-                    }
-
-                    renderMovieCards(data.movies);
-                })
-                .catch(function(err) {
-                    document.getElementById('loading-spinner').style.display = 'none';
-                    document.getElementById('error-msg').innerText = 'An error occurred. Please try again.';
-                    console.error(err);
+    /**
+     * Helper: fetch data from OMDB API
+     */
+    function omdbFetch(params) {
+        return new Promise((resolve, reject) => {
+            const query = new URLSearchParams({ apikey: OMDB_API_KEY, ...params }).toString();
+            const url = `https://www.omdbapi.com/?${query}`;
+            https.get(url, (res) => {
+                let data = '';
+                res.on('data', chunk => data += chunk);
+                res.on('end', () => {
+                    try { resolve(JSON.parse(data)); }
+                    catch (e) { reject(e); }
                 });
+            }).on('error', reject);
+        });
+    }
+
+    // ── Serve the search HTML page ──
+    app.get('/movies', (req, res) => {
+        res.sendFile(path.join(__dirname, '../html_files/search.html'));
+    });
+
+    /**
+     * GET /searchMovies?query=<title>&token=<token>&username=<username>
+     * Searches OMDB for movies by title. Returns up to 10 results.
+     * Session required.
+     */
+    app.get('/searchMovies', async (req, res) => {
+        const { query, token, username } = req.query;
+
+        if (!isValidSession(token, username)) {
+            return res.json({ success: false, message: 'Session expired. Please log in again.' });
+        }
+
+        if (!query || query.trim() === '') {
+            return res.json({ success: false, message: 'Please enter a search term.' });
+        }
+
+        try {
+            const data = await omdbFetch({ s: query.trim(), type: 'movie' });
+
+            if (data.Response === 'False') {
+                return res.json({ success: true, movies: [], message: data.Error || 'No movies found.' });
             }
 
-            function handleKeyDown(event) {
-                if (event.key === 'Enter') searchMovies();
+            // OMDB search returns basic info; send it as-is
+            return res.json({ success: true, movies: data.Search || [] });
+
+        } catch (err) {
+            console.error('Error in /searchMovies:', err);
+            return res.json({ success: false, message: 'Error fetching movies. Please try again.' });
+        }
+    });
+
+    /**
+     * GET /movieDetails?imdbID=<id>&token=<token>&username=<username>
+     * Fetches full details for a single movie by IMDB ID.
+     * Session required.
+     */
+    app.get('/movieDetails', async (req, res) => {
+        const { imdbID, token, username } = req.query;
+
+        if (!isValidSession(token, username)) {
+            return res.json({ success: false, message: 'Session expired. Please log in again.' });
+        }
+
+        if (!imdbID) {
+            return res.json({ success: false, message: 'No movie ID provided.' });
+        }
+
+        try {
+            const data = await omdbFetch({ i: imdbID, plot: 'full' });
+
+            if (data.Response === 'False') {
+                return res.json({ success: false, message: data.Error || 'Movie not found.' });
             }
 
-            function renderMovieCards(movies) {
-                var grid = document.getElementById('results-grid');
-                grid.innerHTML = '';
-                movies.forEach(function(movie) {
-                    var card = document.createElement('div');
-                    card.className = 'movie-card';
-                    card.onclick = function() { openMovieModal(movie.imdbID); };
+            return res.json({ success: true, movie: data });
 
-                    var posterHtml;
-                    if (movie.Poster && movie.Poster !== 'N/A') {
-                        posterHtml = '<img src="' + movie.Poster + '" alt="' + escHtml(movie.Title) + '" loading="lazy">';
-                    } else {
-                        posterHtml = '<div class="no-poster">No Poster</div>';
-                    }
+        } catch (err) {
+            console.error('Error in /movieDetails:', err);
+            return res.json({ success: false, message: 'Error fetching movie details.' });
+        }
+    });
 
-                    card.innerHTML = posterHtml
-                        + '<div class="card-title">' + escHtml(movie.Title) + '</div>'
-                        + '<div class="card-year">' + escHtml(movie.Year) + '</div>';
+    /**
+     * POST /submitReview
+     * Saves a user's star rating + review for a movie to the DB.
+     * Body: { imdbID, title, year, poster, rating, review, token, username }
+     */
+    app.post('/submitReview', async (req, res) => {
+        const { imdbID, title, year, poster, rating, review, token, username } = req.body;
 
-                    grid.appendChild(card);
-                });
-            }
+        if (!isValidSession(token, username)) {
+            return res.json({ success: false, message: 'Session expired. Please log in again.' });
+        }
 
-            function openMovieModal(imdbID) {
-                document.getElementById('modal-info').innerHTML = '<p>Loading...</p>';
-                document.getElementById('modal-plot').innerText = '';
-                document.getElementById('modal-poster').style.display = 'none';
-                document.getElementById('modal-poster-fallback').style.display = 'none';
-                resetReviewForm();
-                document.getElementById('modal-overlay').classList.add('open');
-                document.getElementById('modal-box').dataset.imdbid = imdbID;
+        if (!imdbID || !title || rating === undefined) {
+            return res.json({ success: false, message: 'Missing required fields.' });
+        }
 
-                fetch('/movieDetails?imdbID=' + encodeURIComponent(imdbID)
-                    + '&token=' + encodeURIComponent(getToken())
-                    + '&username=' + encodeURIComponent(getUsername()))
-                .then(function(res) { return res.json(); })
-                .then(function(data) {
-                    if (!data.success) {
-                        document.getElementById('modal-info').innerHTML = '<p style="color:red">' + escHtml(data.message) + '</p>';
-                        return;
-                    }
-                    populateModal(data.movie);
-                    loadExistingReview(imdbID);
-                })
-                .catch(function(err) {
-                    document.getElementById('modal-info').innerHTML = '<p style="color:red">Error loading movie details.</p>';
-                    console.error(err);
-                });
-            }
+        const numRating = parseFloat(rating);
+        if (isNaN(numRating) || numRating < 1 || numRating > 10) {
+            return res.json({ success: false, message: 'Rating must be between 1 and 10.' });
+        }
 
-            function populateModal(movie) {
-                var posterEl = document.getElementById('modal-poster');
-                var fallbackEl = document.getElementById('modal-poster-fallback');
-                if (movie.Poster && movie.Poster !== 'N/A') {
-                    posterEl.src = movie.Poster;
-                    posterEl.style.display = 'block';
-                    fallbackEl.style.display = 'none';
-                } else {
-                    posterEl.style.display = 'none';
-                    fallbackEl.style.display = 'flex';
-                }
+        try {
+            const reviews = db.collection('reviews');
 
-                var rated    = movie.Rated !== 'N/A'    ? movie.Rated : '';
-                var runtime  = movie.Runtime !== 'N/A'  ? movie.Runtime : '';
-                var genre    = movie.Genre !== 'N/A'    ? movie.Genre : '';
-                var director = movie.Director !== 'N/A' ? 'Director: ' + movie.Director : '';
-                var actors   = movie.Actors !== 'N/A'   ? 'Cast: ' + movie.Actors : '';
-                var imdb     = movie.imdbRating !== 'N/A' ? 'IMDB: ★ ' + movie.imdbRating + '/10' : '';
+            // Upsert: one review per user per movie
+            await reviews.updateOne(
+                { username: username, imdbID: imdbID },
+                { $set: { username, imdbID, title, year, poster, rating: numRating, review: review || '', updatedAt: new Date() } },
+                { upsert: true }
+            );
 
-                document.getElementById('modal-info').innerHTML =
-                    '<h2>' + escHtml(movie.Title) + ' (' + escHtml(movie.Year) + ')</h2>'
-                    + (genre    ? '<p>' + escHtml(genre) + (rated ? ' &nbsp;|&nbsp; ' + escHtml(rated) : '') + (runtime ? ' &nbsp;|&nbsp; ' + escHtml(runtime) : '') + '</p>' : '')
-                    + (director ? '<p>' + escHtml(director) + '</p>' : '')
-                    + (actors   ? '<p style="font-size:13px;color:#666">' + escHtml(actors) + '</p>' : '')
-                    + (imdb     ? '<p style="color:rgb(82,82,221);font-weight:bold;">' + escHtml(imdb) + '</p>' : '');
+            // Update the user's average rating and favorite movie in the users collection
+            const allUserReviews = await reviews.find({ username: username }).toArray();
+            const avgRating = allUserReviews.reduce((sum, r) => sum + r.rating, 0) / allUserReviews.length;
 
-                document.getElementById('modal-plot').innerText = (movie.Plot && movie.Plot !== 'N/A') ? movie.Plot : '';
+            // Favorite = the movie with the highest rating
+            const favorite = allUserReviews.reduce((best, r) => r.rating > best.rating ? r : best, allUserReviews[0]);
 
-                document.getElementById('modal-box').dataset.title  = movie.Title;
-                document.getElementById('modal-box').dataset.year   = movie.Year;
-                document.getElementById('modal-box').dataset.poster = (movie.Poster && movie.Poster !== 'N/A') ? movie.Poster : '';
-            }
+            await db.collection('users').updateOne(
+                { username: username },
+                { $set: { average_rating: Math.round(avgRating * 10) / 10, favorite: favorite.title } }
+            );
 
-            function closeModal() {
-                document.getElementById('modal-overlay').classList.remove('open');
-                resetReviewForm();
-            }
+            return res.json({ success: true, message: 'Review saved!' });
 
-            document.addEventListener('DOMContentLoaded', function() {
-                document.getElementById('modal-overlay').addEventListener('click', function(e) {
-                    if (e.target === document.getElementById('modal-overlay')) closeModal();
-                });
-            });
+        } catch (err) {
+            console.error('Error in /submitReview:', err);
+            return res.json({ success: false, message: 'Error saving review.' });
+        }
+    });
 
-            function hoverStar(n) {
-                document.querySelectorAll('.star').forEach(function(s, i) {
-                    s.classList.toggle('hover', i < n);
-                });
-            }
+    /**
+     * GET /getReview?imdbID=<id>&token=<token>&username=<username>
+     * Gets the logged-in user's existing review for a movie (if any).
+     */
+    app.get('/getReview', async (req, res) => {
+        const { imdbID, token, username } = req.query;
 
-            function unhoverStars() {
-                document.querySelectorAll('.star').forEach(function(s) {
-                    s.classList.remove('hover');
-                });
-            }
+        if (!isValidSession(token, username)) {
+            return res.json({ success: false, message: 'Session expired.' });
+        }
 
-            function selectStar(n) {
-                selectedRating = n;
-                document.querySelectorAll('.star').forEach(function(s, i) {
-                    s.classList.toggle('selected', i < n);
-                });
-                document.getElementById('rating-label').innerText = 'Your rating: ' + n + '/10';
-            }
-
-            function resetReviewForm() {
-                selectedRating = 0;
-                document.querySelectorAll('.star').forEach(function(s) {
-                    s.classList.remove('selected', 'hover');
-                });
-                document.getElementById('rating-label').innerText = 'Click a star to rate';
-                document.getElementById('review-textarea').value = '';
-                document.getElementById('submit-review-msg').innerText = '';
-                document.getElementById('submit-review-msg').className = '';
-            }
-
-            function loadExistingReview(imdbID) {
-                fetch('/getReview?imdbID=' + encodeURIComponent(imdbID)
-                    + '&token=' + encodeURIComponent(getToken())
-                    + '&username=' + encodeURIComponent(getUsername()))
-                .then(function(res) { return res.json(); })
-                .then(function(data) {
-                    if (data.success && data.review) {
-                        selectStar(data.review.rating);
-                        document.getElementById('review-textarea').value = data.review.review || '';
-                        document.getElementById('submit-review-msg').innerText = 'You have already reviewed this movie. Submitting will update your review.';
-                    }
-                })
-                .catch(function(err) { console.error('getReview error:', err); });
-            }
-
-            function submitReview() {
-                var msgEl = document.getElementById('submit-review-msg');
-                msgEl.className = '';
-
-                if (selectedRating === 0) {
-                    msgEl.innerText = 'Please select a star rating before submitting.';
-                    msgEl.className = 'error';
-                    return;
-                }
-
-                var box = document.getElementById('modal-box');
-                var payload = {
-                    imdbID:   box.dataset.imdbid,
-                    title:    box.dataset.title,
-                    year:     box.dataset.year,
-                    poster:   box.dataset.poster,
-                    rating:   selectedRating,
-                    review:   document.getElementById('review-textarea').value.trim(),
-                    token:    getToken(),
-                    username: getUsername()
-                };
-
-                fetch('/submitReview', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                })
-                .then(function(res) { return res.json(); })
-                .then(function(data) {
-                    if (data.success) {
-                        msgEl.innerText = '✓ Review saved! Your profile stats have been updated.';
-                    } else {
-                        msgEl.innerText = data.message || 'Failed to save review.';
-                        msgEl.className = 'error';
-                    }
-                })
-                .catch(function(err) {
-                    msgEl.innerText = 'An error occurred. Please try again.';
-                    msgEl.className = 'error';
-                    console.error(err);
-                });
-            }
-
-            function addToWatchlist() {
-                var box = document.getElementById('modal-box');
-                var msgEl = document.getElementById('submit-review-msg');
-
-                fetch('/watchlist/add', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'session': getToken()
-                    },
-                    body: JSON.stringify({
-                        title:  box.dataset.title,
-                        year:   box.dataset.year,
-                        poster: box.dataset.poster
-                    })
-                })
-                .then(function(res) { return res.json(); })
-                .then(function(data) {
-                    msgEl.className = '';
-                    msgEl.innerText = data.msgs || 'Added to watchlist!';
-                })
-                .catch(function(err) {
-                    msgEl.innerText = 'Could not add to watchlist.';
-                    msgEl.className = 'error';
-                    console.error(err);
-                });
-            }
-
-            function escHtml(str) {
-                if (!str) return '';
-                return String(str)
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;');
-            }
-        </script>
-    </head>
-
-    <header>
-        <h2>
-            <span>ALL MOVIES</span>
-            <span><a class="header" href="/profile">Profile</a></span>
-            <span><a class="header" href="/movies">Movies</a></span>
-            <span><a class="header" href="/account">Watchlist</a></span>
-        </h2>
-    </header>
-
-    <body onload="checkLogin()">
-
-        <div id="search-container">
-            <h2 style="margin-bottom: 16px;">Search Movies</h2>
-
-            <div id="search-bar-row">
-                <input type="text" id="search-input" placeholder="Enter a movie title..."
-                       onkeydown="handleKeyDown(event)" />
-                <button id="search-btn" onclick="searchMovies()">Search</button>
-            </div>
-
-            <p id="error-msg"></p>
-            <div id="loading-spinner">🔍 Searching...</div>
-            <div id="no-results-msg"></div>
-            <div id="results-grid"></div>
-        </div>
-
-        <!-- Movie Detail Modal -->
-        <div id="modal-overlay">
-            <div id="modal-box">
-                <button id="modal-close" onclick="closeModal()">✕</button>
-
-                <div id="modal-header">
-                    <img id="modal-poster" src="" alt="Movie poster" style="display:none; width:120px; border-radius:4px;">
-                    <div id="modal-poster-fallback" class="no-img" style="display:none;">No Poster</div>
-                    <div id="modal-info"><p>Loading...</p></div>
-                </div>
-
-                <p id="modal-plot"></p>
-
-                <div id="review-section">
-                    <h3>Rate &amp; Review</h3>
-                    <div class="star-row">
-                        <button class="star" onmouseenter="hoverStar(1)"  onmouseleave="unhoverStars()" onclick="selectStar(1)">★</button>
-                        <button class="star" onmouseenter="hoverStar(2)"  onmouseleave="unhoverStars()" onclick="selectStar(2)">★</button>
-                        <button class="star" onmouseenter="hoverStar(3)"  onmouseleave="unhoverStars()" onclick="selectStar(3)">★</button>
-                        <button class="star" onmouseenter="hoverStar(4)"  onmouseleave="unhoverStars()" onclick="selectStar(4)">★</button>
-                        <button class="star" onmouseenter="hoverStar(5)"  onmouseleave="unhoverStars()" onclick="selectStar(5)">★</button>
-                        <button class="star" onmouseenter="hoverStar(6)"  onmouseleave="unhoverStars()" onclick="selectStar(6)">★</button>
-                        <button class="star" onmouseenter="hoverStar(7)"  onmouseleave="unhoverStars()" onclick="selectStar(7)">★</button>
-                        <button class="star" onmouseenter="hoverStar(8)"  onmouseleave="unhoverStars()" onclick="selectStar(8)">★</button>
-                        <button class="star" onmouseenter="hoverStar(9)"  onmouseleave="unhoverStars()" onclick="selectStar(9)">★</button>
-                        <button class="star" onmouseenter="hoverStar(10)" onmouseleave="unhoverStars()" onclick="selectStar(10)">★</button>
-                    </div>
-                    <div id="rating-label">Click a star to rate</div>
-                    <br>
-                    <textarea id="review-textarea" placeholder="Write a short review (optional)..."></textarea>
-                    <div id="modal-action-row">
-                        <button onclick="submitReview()">Submit Review</button>
-                        <button onclick="addToWatchlist()">+ Add to Watchlist</button>
-                    </div>
-                    <p id="submit-review-msg"></p>
-                </div>
-
-            </div>
-        </div>
-
-    </body>
-</html>
+        try {
+            const review = await db.collection('reviews').findOne({ username, imdbID });
+            return res.json({ success: true, review: review || null });
+        } catch (err) {
+            console.error('Error in /getReview:', err);
+            return res.json({ success: false, message: 'Error fetching review.' });
+        }
+    });
+};
