@@ -133,6 +133,13 @@
                 div.innerHTML = "<p>" + movies.error + "</p>";
                 return;
             }
+            if(movies.length === 0){
+                div.innerHTML = "<div class='empty'><h2>Your watchlist is empty</h2><p>Search for movies and add them to your watchlist to see them here!</p></div>";
+                return;
+            }
+            else{
+                div.innerHTML = "<div><h1 style='text-align:center; margin-bottom: 30px;'>Watchlist</h1><h2 style='text-align:center; margin-bottom: 30px;'>" + movies.length + " Movies</h2></div>";
+            }
             for (var i = 0; i < movies.length; i++) {
                 var movie = movies[i];
                 div.innerHTML += `
