@@ -116,10 +116,10 @@
             <span>ALL MOVIES</span>
             <span><a class="header" href="/profile">Profile</a></span>
             <span><a class="header" href="/movies">Movies</a></span>
-            <span><a class="header" href="/watchlist.html">Watchlist</a></span>
+            <span><a class="header" href="/watchlist">Watchlist</a></span>
         </h2>
     </header>
-<body>
+<body onload="checkLogin()">
     <div class="container">
         <div class="top-card">
             <h2 id="averageRating"> Average Rating: 0/5</h2>
@@ -130,17 +130,26 @@
 
     <script>
         var session = localStorage.getItem("token");
-        console.log("token is:", session);
-
-        // if not logged in, stop immediately
-        if (!session) {
-            alert("You are not logged in");
-        }
+        function checkLogin() {
+                fetch("/checkLogin?token=" + localStorage.getItem("token") + "&username=" + localStorage.getItem("username"))
+                .then(response => response.json())
+                .then(data => {
+                    if(!data.success){
+                        alert("Session expired or invalid. Please log in again.");
+                        window.location.href = "/login";
+                        return;
+                    }
+                    else{
+                        loadlist();
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+            }
 
         async function loadlist() {
-            if (!session) return;
-
-            var res = await fetch("/watchlist?session=" + session);
+            var res = await fetch("/watchlist/load?session=" + session);
             var movies = await res.json();
 
             var div = document.getElementById("watchlist");
@@ -249,8 +258,6 @@
             alert(data.msgs || data.error);
             loadlist();
         }
-
-        loadlist();
     </script>
 </body>
 </html>

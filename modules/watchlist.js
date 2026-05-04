@@ -2,12 +2,12 @@
  * For the user's watchlist
  * Is an exported function to avoid using globals
  */
-
+var path = require('path');
 module.exports = function(app, db, sessions) {
     var watchlists = db.collection("watchlists");
 
     function getUser(req) {
-        var token = req.headers.session || req.query.session;
+        var token = req.query.session;
 
         for (var username in sessions) {
             if (sessions[username].token === token) {
@@ -18,13 +18,21 @@ module.exports = function(app, db, sessions) {
         return null;
     }
     app.get("/watchlist", async function(req, res) {
-        var username = getUser(req);
+        /*var username = getUser(req);
 
         if (!username) {
             res.status(401).json({ error: "You are not logged in" });
             return;
         }
 
+        var movies = await watchlists.find({ username: username }).toArray();
+        res.json(movies);8?
+            */
+        res.sendFile(path.join(__dirname, '../html_files/watchlist.html'));
+    });
+
+    app.get("/watchlist/load", async function(req, res) {
+        var username = getUser(req);
         var movies = await watchlists.find({ username: username }).toArray();
         res.json(movies);
     });
