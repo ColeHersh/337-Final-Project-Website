@@ -151,18 +151,6 @@
                 border-radius: 4px;
             }
 
-            #modal-poster.no-img {
-                width: 120px;
-                height: 175px;
-                background: #ddd;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 12px;
-                color: #666;
-                border-radius: 4px;
-            }
-
             #modal-info h2 {
                 margin: 0 0 6px;
                 font-size: 22px;
@@ -391,11 +379,11 @@
                     fallbackEl.style.display = 'flex';
                 }
 
-                var rated    = movie.Rated !== 'N/A'    ? movie.Rated : '';
-                var runtime  = movie.Runtime !== 'N/A'  ? movie.Runtime : '';
-                var genre    = movie.Genre !== 'N/A'    ? movie.Genre : '';
-                var director = movie.Director !== 'N/A' ? 'Director: ' + movie.Director : '';
-                var actors   = movie.Actors !== 'N/A'   ? 'Cast: ' + movie.Actors : '';
+                var rated    = movie.Rated !== 'N/A'      ? movie.Rated    : '';
+                var runtime  = movie.Runtime !== 'N/A'    ? movie.Runtime  : '';
+                var genre    = movie.Genre !== 'N/A'      ? movie.Genre    : '';
+                var director = movie.Director !== 'N/A'   ? 'Director: ' + movie.Director : '';
+                var actors   = movie.Actors !== 'N/A'     ? 'Cast: ' + movie.Actors : '';
                 var imdb     = movie.imdbRating !== 'N/A' ? 'IMDB: ★ ' + movie.imdbRating + '/10' : '';
 
                 document.getElementById('modal-info').innerHTML =
@@ -520,7 +508,8 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'session': getToken()
+                        'session':  getToken(),
+                        'username': getUsername()  // FIX: needed so watchlist.js can validate session
                     },
                     body: JSON.stringify({
                         title:  box.dataset.title,
@@ -531,7 +520,7 @@
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
                     msgEl.className = '';
-                    msgEl.innerText = data.msgs || 'Added to watchlist!';
+                    msgEl.innerText = data.msgs || data.error || 'Added to watchlist!';
                 })
                 .catch(function(err) {
                     msgEl.innerText = 'Could not add to watchlist.';
