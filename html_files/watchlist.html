@@ -5,15 +5,11 @@
 </head>
 
 <body>
-    <h2>Add Movies</h2>
-
-    <input type="text" id="title" placeholder="Name">
-    <input type="text" id="year" placeholder="Year">
-    <input type="text" id="poster" placeholder="Poster URL">
-
-    <button onclick="addMovies()">Add to Watchlist</button>
-
     <h2>Movies</h2>
+
+    <a href="/movies">Search movies to add</a>
+    <br><br>
+
     <button onclick="loadlist()">Load Watchlist</button>
 
     <div id="watchlist"></div>
@@ -84,38 +80,6 @@
                     <hr>
                 `;
             }
-        }
-
-        async function addMovies() {
-            if (!session) {
-                alert("You are not logged in");
-                return;
-            }
-
-            var movie = {
-                title: document.getElementById("title").value,
-                year: document.getElementById("year").value,
-                poster: document.getElementById("poster").value
-            };
-
-            console.log("movie being sent:", movie);
-            console.log("session being sent:", session);
-
-            var res = await fetch("/watchlist/add?session=" + session, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(movie)
-            });
-
-            console.log("status:", res.status);
-
-            var data = await res.json();
-            console.log("response:", data);
-
-            alert(data.msgs || data.error);
-            loadlist();
         }
 
         async function removeMovie(title) {
