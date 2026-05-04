@@ -71,7 +71,8 @@ module.exports = function(app, db, sessions) {
         res.json({ msgs: "Movie has been added to the watchlist" });
     });
 
-    app.delete("/watchlist/remove", async function(req, res) {
+    // watched does same thing so remove as unessesary
+    /*app.delete("/watchlist/remove", async function(req, res) {
         var username = getUser(req);
 
         if (!username) {
@@ -85,7 +86,7 @@ module.exports = function(app, db, sessions) {
         });
 
         res.json({ msgs: "The movie has been removed from the watchlist" });
-    });
+    });*/
 
     app.post("/watchlist/watched", async function(req, res) {
         var username = getUser(req);
@@ -103,7 +104,8 @@ module.exports = function(app, db, sessions) {
         res.json({ msgs: "Removed from the watchlist and marked as watched" });
     });
 
-    app.post("/watchlist/rating", async function(req, res) {
+    // now defunct as done in search module
+    /*app.post("/watchlist/rating", async function(req, res) {
         var username = getUser(req);
 
         if (!username) {
@@ -129,5 +131,5 @@ module.exports = function(app, db, sessions) {
         );
 
         res.json({ msgs: "Rating updated" });
-    });
+    });*/
 };

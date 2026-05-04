@@ -40,22 +40,6 @@
             background-color: #1d4ed8;
         }
 
-        .remove-btn {
-            background-color: #dc2626;
-        }
-
-        .remove-btn:hover {
-            background-color: #b91c1c;
-        }
-
-        .watched-btn {
-            background-color: #16a34a;
-        }
-
-        .watched-btn:hover {
-            background-color: #15803d;
-        }
-
         .movie-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
@@ -80,11 +64,6 @@
 
         .movie-card h3 {
             margin-bottom: 6px;
-        }
-
-        .rating-text {
-            font-weight: bold;
-            color: #f59e0b;
         }
 
         select {
@@ -154,40 +133,14 @@
                 div.innerHTML = "<p>" + movies.error + "</p>";
                 return;
             }
-            var totalRating = 0;
-            var totalMovies = 0;
-            
-            for(var i =0; i < movies.length; i++){
-                if(movies[i].rating > 0){
-                    totalRating += movies[i].rating;
-                    totalMovies++;
-                }
-            }
-
-            var overallRating = 0;
-            if(totalMovies > 0){
-                overallRating = (totalRating / totalMovies).toFixed(1);
-            }
             for (var i = 0; i < movies.length; i++) {
                 var movie = movies[i];
                 div.innerHTML += `
                     <div>
                         <h3>${movie.title} (${movie.year})</h3>
                         <img src="${movie.poster}" width="120">
-                        <p>Rating: ${movie.rating}/5</p>
-
-                        <select id="rating-${i}">
-                            <option value="1">1 Star</option>
-                            <option value="2">2 Stars</option>
-                            <option value="3">3 Stars</option>
-                            <option value="4">4 Stars</option>
-                            <option value="5">5 Stars</option>
-                        </select>
-
-                        <button onclick="rateMovie('${movie.title}', 'rating-${i}')">Rate</button>
                         <br><br>
 
-                        <button onclick="removeMovie('${movie.title}')">Remove</button>
                         <button onclick="watched('${movie.title}')">Watched</button>
                     </div>
                     <hr>
@@ -195,6 +148,8 @@
             }
         }
 
+        // duplicate of watched function
+        /*
         async function removeMovie(title) {
             if (!session) return;
 
@@ -209,10 +164,9 @@
             var data = await res.json();
             alert(data.msgs || data.error);
             loadlist();
-        }
+        }*/
 
         async function watched(title) {
-            if (!session) return;
 
             var res = await fetch("/watchlist/watched?session=" + localStorage.getItem("token"), {
                 method: "POST",
@@ -220,27 +174,6 @@
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({ title: title })
-            });
-
-            var data = await res.json();
-            alert(data.msgs || data.error);
-            loadlist();
-        }
-
-        async function rateMovie(title, ratingId) {
-            if (!session) return;
-
-            var rating = document.getElementById(ratingId).value;
-
-            var res = await fetch("/watchlist/rating?session=" + localStorage.getItem("token"), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    title: title,
-                    rating: rating
-                })
             });
 
             var data = await res.json();
