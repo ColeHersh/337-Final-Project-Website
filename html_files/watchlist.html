@@ -122,14 +122,12 @@
 <body onload="checkLogin()">
     <div class="container">
         <div class="top-card">
-            <h2 id="averageRating"> Average Rating: 0/5</h2>
             <button onclick="loadlist()">Load Watchlist</button>
         </div>
         <div id="watchlist"></div>
     </div>
 
     <script>
-        var session = localStorage.getItem("token");
         function checkLogin() {
                 fetch("/checkLogin?token=" + localStorage.getItem("token") + "&username=" + localStorage.getItem("username"))
                 .then(response => response.json())
@@ -149,11 +147,10 @@
             }
 
         async function loadlist() {
-            var res = await fetch("/watchlist/load?session=" + session);
+            var res = await fetch("/watchlist/load?session=" + localStorage.getItem("token"));
             var movies = await res.json();
 
             var div = document.getElementById("watchlist");
-            var averageDiv = document.getElementById("averageRating");
             div.innerHTML = "";
 
             if (movies.error) {
@@ -174,13 +171,8 @@
             if(totalMovies > 0){
                 overallRating = (totalRating / totalMovies).toFixed(1);
             }
-            averageDiv.innerHTML = "Average Rating: " + overallRating + "/5";
             for (var i = 0; i < movies.length; i++) {
                 var movie = movies[i];
-                var average = 0;
-                if(movie.ratingCount > 0){
-                    average = (movie.ratingSum / movie.ratingCount).toFixed(1);
-                }
                 div.innerHTML += `
                     <div>
                         <h3>${movie.title} (${movie.year})</h3>
@@ -209,7 +201,7 @@
         async function removeMovie(title) {
             if (!session) return;
 
-            var res = await fetch("/watchlist/remove?session=" + session, {
+            var res = await fetch("/watchlist/remove?session=" + localStorage.getItem("token"), {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json"
@@ -225,7 +217,7 @@
         async function watched(title) {
             if (!session) return;
 
-            var res = await fetch("/watchlist/watched?session=" + session, {
+            var res = await fetch("/watchlist/watched?session=" + localStorage.getItem("token"), {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -243,7 +235,7 @@
 
             var rating = document.getElementById(ratingId).value;
 
-            var res = await fetch("/watchlist/rating?session=" + session, {
+            var res = await fetch("/watchlist/rating?session=" + localStorage.getItem("token"), {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
